@@ -1,4 +1,4 @@
-$(document).ready(function(){
+//documentnt).ready(function(){
 function onFileLoad(elementId, event) {
     document.getElementById(elementId).innerText = event.target.result;
 }
@@ -19,4 +19,4 @@ function onChooseFile(event, onLoadFileHandler) {
     fr.readAsText(file);
 }
   
-});
+//});
