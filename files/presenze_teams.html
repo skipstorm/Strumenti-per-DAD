@@ -12,23 +12,77 @@
   <meta property="og:url" content="">
   <meta property="og:image" content="">
 
-  <link rel="manifest" href="site.webmanifest">
   <link rel="apple-touch-icon" href="icon.png">
   <!-- Place favicon.ico in the root directory -->
 
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="css/main.css">
 
   <meta name="theme-color" content="#fafafa">
 </head>
 
 <body>
-<input type='file' onchange='onChooseFile(event, onFileLoad.bind(this, "contents"))' />
-<p id="contents"></p>
+  <div data-script-textfile="" class="file_preview">
+    <input type="file" /> 
+    <div class="loading">Attendere ...</div>
+    <textarea class="hidden"></textarea>
+  </div>
+  <div id="lista"></div>
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous"></script>
+  <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+  
   <script src="js/scripts.js"></script>
+  <script type="text/javascript">
+    $('.file_preview').on("textfile:loaded", function(){
+      $('#lista').empty();
+      var listaText = $('.file_preview textarea').val();
+      var listaArray = listaText.split("\n");
+      var elements = {};
+      var orderedElements = {};
+      var tempName = '';
+      var tempLastname = '';
+      for(var i = 1; i < listaArray.length; i++){
+        tempName = listaArray[i].split("\t")[0].replace(' (ospite)', '').replace('(Ospite) ', '').replace('Avv. ', '').replace('Avv ', '');
+        tempLastname = '('+tempName.split(' ').pop()+') '+tempName;
+        if(!elements.hasOwnProperty(tempLastname)) {
+          elements[tempLastname] = {nome: tempName, ore: []};
+        }
 
+        elements[tempLastname].ore.push({
+          azione: listaArray[i].split("\t")[1],
+          ora: moment(listaArray[i].split("\t")[2], 'D/M/YYYY, hh:mm:ss').format('hh:mm:ss')
+        });
+      }
+
+      orderedElements = Object.keys(elements).sort().reduce(
+        (obj, key) => { 
+          obj[key] = elements[key]; 
+          return obj;
+        }, 
+        {}
+      );
+
+
+      var table = '<table class="table table-striped"><thead><tr><th>(cognome?) Nome e cognome</th><th>Azioni e orari</th></tr></thead><tbody>';
+      var tmpRow = '';
+      for(let i of Object.values(orderedElements)) {
+        table += '<tr><td>'+i.nome+'</td><td>';
+        tmpRow = '';
+        for(let n of i.ore) {
+          tmpRow += n.azione+' - '+n.ora+"\n<br>" ;
+        }
+        table += tmpRow+'</td></tr>';
+      }
+      table += '</tbody><tfoot></tfoot></table>';
+      $('#lista').empty().append(table);
+      $('#lista table').DataTable();
+    });
+  </script>
 </body>
 </html>

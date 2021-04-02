@@ -261,3 +261,6 @@ textarea {
   }
 }
 
+
+.file_preview .loading {display: none;}
+.file_preview.loading .loading {display: block;}
